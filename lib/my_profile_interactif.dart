@@ -1,4 +1,9 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:my_profile/main.dart';
 
 class MyProfileInteractif extends StatefulWidget {
   @override
@@ -26,6 +31,8 @@ class MyProfileInteractifState extends State<MyProfileInteractif>{
   int groupValue = 1;
   List<String> langs = ["Dart", "PHP", "Java", "C++", "JavaScript", "Python"];
   bool elevatedButtonPressed = true;
+  ImagePicker imagePicker = ImagePicker();
+  File? file;
 
   @override
   void initState() {
@@ -57,6 +64,7 @@ class MyProfileInteractifState extends State<MyProfileInteractif>{
                   padding: const EdgeInsets.all(1),
                 child: myProfileCard(),
               ),
+              pictureRow(),
               myProfileDivider(),
               sectionTitle("Modifier les infos"),
               Padding(
@@ -154,7 +162,31 @@ class MyProfileInteractifState extends State<MyProfileInteractif>{
     );
   }
 
+  Row pictureRow() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+            onPressed: (() => useCamera(ImageSource.gallery)),
+            child: const Icon(Icons.photo_library_outlined)
+        ),
+        ElevatedButton(
+            onPressed: (){useCamera(ImageSource.camera);},
+            child: const Icon(Icons.camera_alt)
+        )
+      ],
+    );
+  }
 
+  Future useCamera(ImageSource source) async{
+    XFile? xFile = await imagePicker.pickImage(source: source);
+    if(xFile != null) {
+      setState(() {
+        file = File(xFile!.path);
+      });
+    }
+  }
 
   ElevatedButton showSecret() {
     return ElevatedButton(
@@ -219,9 +251,7 @@ class MyProfileInteractifState extends State<MyProfileInteractif>{
         child: Column(
           children: [
             Text("$prenom $nom"),
-            Text("Age: $age ans"),
-            Text("Taille: ${taille.toInt()}cm"),
-            Text((genre) ? "Genre: Féminin" : "Genre: Masculin"),
+            rowCardWithPicture(),
             Text("Hobbies: ${getSelectedHobbies()}"),
             Text("Langage de programmation favori: ${langs[groupValue]}"),
             showSecret(),
@@ -229,6 +259,25 @@ class MyProfileInteractifState extends State<MyProfileInteractif>{
           ],
         ),
       ),
+    );
+  }
+
+  Row rowCardWithPicture() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+            child: (file != null) ? Image.file(file!) :const Center(child: Icon(Icons.photo_album),)
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Age: $age ans"),
+            Text("Taille: ${taille.toInt()}cm"),
+            Text((genre) ? "Genre: Féminin" : "Genre: Masculin")
+          ],
+        )
+      ],
     );
   }
   
